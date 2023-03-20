@@ -1,0 +1,12 @@
+type Query {
+    jobAnnouncements: [JobAnnouncement!]!
+    company: [Company!]!
+    user: [User!]!
+    getUser(id:ID!):User!
+}
+
+type Mutation {
+    createJobAnnouncement(input: JobAnnouncementObject!): JobAnnouncement!
+    createCompany(input: CompanyObject!):Company!
+    createUser(input:UserObject):User!
+}

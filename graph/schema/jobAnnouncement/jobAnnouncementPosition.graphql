@@ -1,0 +1,4 @@
+type JobAnnouncementPositions{
+    jobAnnouncement: JobAnnouncement
+    position: Position
+}

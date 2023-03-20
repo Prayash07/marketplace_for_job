@@ -1,0 +1,5 @@
+type Education{
+    id: ID!
+    degree_name: String!
+    no_of_years_for_degree: Int!
+}

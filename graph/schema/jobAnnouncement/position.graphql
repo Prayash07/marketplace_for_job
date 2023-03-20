@@ -1,0 +1,6 @@
+type Position{
+    id:ID!
+    name:String!
+    experience: Int!
+    job_announcement: JobAnnouncement!
+}

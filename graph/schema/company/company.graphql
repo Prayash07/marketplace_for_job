@@ -1,0 +1,12 @@
+type Company{
+    id: ID!
+    name: String!
+    description: String!
+    numberOfEmployees: Int!
+}
+
+input CompanyObject{
+    name: String!
+    description:String!
+    numberOfEmployees: Int!
+}

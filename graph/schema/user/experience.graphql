@@ -1,0 +1,6 @@
+type Experience{
+    id: ID!
+    no_of_years: Int!
+    company: Company!
+    position: Position!
+}

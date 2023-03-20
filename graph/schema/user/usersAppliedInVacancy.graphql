@@ -1,0 +1,7 @@
+type UsersAppliedInVacancy{
+    id: ID!
+    user: User!
+    jobAnnouncement: JobAnnouncement!
+    company: Company!
+    position: Position!
+}

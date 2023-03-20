@@ -1,0 +1,14 @@
+type JobAnnouncement{
+    id: ID!
+    title: String!
+    description: String!
+    url: String!
+}
+
+input JobAnnouncementObject{
+    title: String!
+    description:String!
+    url:String!
+    position: [ID!]!
+    company:ID!
+}

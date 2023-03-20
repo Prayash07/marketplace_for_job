@@ -1,0 +1,13 @@
+type User {
+    id: ID!
+    name: String!
+    address: String!
+    education: [Education!]!
+}
+
+input UserObject{
+    name:String!
+    address: String!
+    degree_name: String!
+    no_of_years_for_degree: Int!
+}
