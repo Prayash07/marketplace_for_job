@@ -16,33 +16,33 @@ func FetchUserById(ctx context.Context, id string, db *sql.DB) (*model.User, err
 	if err != nil {
 		return nil, err
 	}
-
-	usersEducation, err2 := models.Educations(
-		qm.Select(
-			"Education.ID",
-			"Education.DegreeName",
-			"Education.Years",
-		),
-		//qm.InnerJoin("User ON Education.UserId = User.ID"),
-		qm.Where("UserID = ?", id),
-	).All(ctx, db)
-
-	if err2 != nil {
-		return nil, err2
-	}
-
-	var educations []*model.Education
-	for _, education := range usersEducation {
-		educations = append(educations, &model.Education{
-			DegreeName:         education.DegreeName,
-			NoOfYearsForDegree: education.Years,
-		})
-	}
 	//
+	//usersEducation, err2 := models.Educations(
+	//	qm.Select(
+	//		"Education.ID",
+	//		"Education.DegreeName",
+	//		"Education.Years",
+	//	),
+	//	//qm.InnerJoin("User ON Education.UserId = User.ID"),
+	//	qm.Where("UserID = ?", id),
+	//).All(ctx, db)
+	//
+	//if err2 != nil {
+	//	return nil, err2
+	//}
+	//
+	//var educations []*model.Education
+	//for _, education := range usersEducation {
+	//	educations = append(educations, &model.Education{
+	//		DegreeName:         education.DegreeName,
+	//		NoOfYearsForDegree: education.Years,
+	//	})
+	//}
+	////
 	user := &model.User{
-		Name:      userData.Name,
-		Address:   userData.Address,
-		Education: educations,
+		ID:      userData.ID,
+		Name:    userData.Name,
+		Address: userData.Address,
 	}
 	return user, nil
 }

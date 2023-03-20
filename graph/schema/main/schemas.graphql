@@ -1,3 +1,8 @@
+directive @goField(
+    forceResolver: Boolean
+    name: String
+) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+
 type Query {
     jobAnnouncements: [JobAnnouncement!]!
     company: [Company!]!

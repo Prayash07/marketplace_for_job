@@ -38,6 +38,7 @@ type Config struct {
 type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
+	User() UserResolver
 }
 
 type DirectiveRoot struct {
@@ -127,6 +128,9 @@ type QueryResolver interface {
 	Company(ctx context.Context) ([]*model.Company, error)
 	User(ctx context.Context) ([]*model.User, error)
 	GetUser(ctx context.Context, id string) (*model.User, error)
+}
+type UserResolver interface {
+	Education(ctx context.Context, obj *model.User) ([]*model.Education, error)
 }
 
 type executableSchema struct {
@@ -548,7 +552,12 @@ input JobAnnouncementObject{
     experience: Int!
     job_announcement: JobAnnouncement!
 }`, BuiltIn: false},
-	{Name: "../schema/main/schemas.graphql", Input: `type Query {
+	{Name: "../schema/main/schemas.graphql", Input: `directive @goField(
+    forceResolver: Boolean
+    name: String
+) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+
+type Query {
     jobAnnouncements: [JobAnnouncement!]!
     company: [Company!]!
     user: [User!]!
@@ -573,10 +582,10 @@ type Mutation {
     position: Position!
 }`, BuiltIn: false},
 	{Name: "../schema/user/user.graphql", Input: `type User {
-    id: ID!
+    id: Int!
     name: String!
     address: String!
-    education: [Education!]!
+    education: [Education!]! @goField(forceResolver: true)
 }
 
 input UserObject{
@@ -2359,9 +2368,9 @@ func (ec *executionContext) _User_id(ctx context.Context, field graphql.Collecte
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2371,7 +2380,7 @@ func (ec *executionContext) fieldContext_User_id(ctx context.Context, field grap
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2479,7 +2488,7 @@ func (ec *executionContext) _User_education(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Education, nil
+		return ec.resolvers.User().Education(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2500,8 +2509,8 @@ func (ec *executionContext) fieldContext_User_education(ctx context.Context, fie
 	fc = &graphql.FieldContext{
 		Object:     "User",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
@@ -5216,29 +5225,42 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._User_id(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 
 			out.Values[i] = ec._User_name(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "address":
 
 			out.Values[i] = ec._User_address(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "education":
+			field := field
 
-			out.Values[i] = ec._User_education(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_education(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
 			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

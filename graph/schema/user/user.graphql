@@ -1,8 +1,8 @@
 type User {
-    id: ID!
+    id: Int!
     name: String!
     address: String!
-    education: [Education!]!
+    education: [Education!]! @goField(forceResolver: true)
 }
 
 input UserObject{

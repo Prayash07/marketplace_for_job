@@ -7,6 +7,7 @@ package resolver
 import (
 	"context"
 	"fmt"
+
 	"github.com/Prayash07/practice_project/database/models"
 	"github.com/Prayash07/practice_project/domain/user"
 	graph1 "github.com/Prayash07/practice_project/graph/generated"
@@ -88,13 +89,11 @@ func (r *queryResolver) User(ctx context.Context) ([]*model.User, error) {
 	}
 
 	return usersData, nil
-
 }
 
 // GetUser is the resolver for the getUser field.
 func (r *queryResolver) GetUser(ctx context.Context, id string) (*model.User, error) {
 	return user.FetchUserById(ctx, id, r.Db)
-
 }
 
 // Mutation returns graph1.MutationResolver implementation.
