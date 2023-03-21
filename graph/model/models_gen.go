@@ -2,8 +2,14 @@
 
 package model
 
+import (
+	"fmt"
+	"io"
+	"strconv"
+)
+
 type Company struct {
-	ID                string `json:"id"`
+	ID                int    `json:"id"`
 	Name              string `json:"name"`
 	Description       string `json:"description"`
 	NumberOfEmployees int    `json:"numberOfEmployees"`
@@ -29,10 +35,11 @@ type Experience struct {
 }
 
 type JobAnnouncement struct {
-	ID          string `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	URL         string `json:"url"`
+	ID          string   `json:"id"`
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+	URL         string   `json:"url"`
+	Company     *Company `json:"company"`
 }
 
 type JobAnnouncementObject struct {
@@ -64,6 +71,7 @@ type User struct {
 	ID        int          `json:"id"`
 	Name      string       `json:"name"`
 	Address   string       `json:"address"`
+	Gender    Gender       `json:"gender"`
 	Education []*Education `json:"education"`
 }
 
@@ -80,4 +88,45 @@ type UsersAppliedInVacancy struct {
 	JobAnnouncement *JobAnnouncement `json:"jobAnnouncement"`
 	Company         *Company         `json:"company"`
 	Position        *Position        `json:"position"`
+}
+
+type Gender string
+
+const (
+	GenderMale   Gender = "Male"
+	GenderFemale Gender = "Female"
+)
+
+var AllGender = []Gender{
+	GenderMale,
+	GenderFemale,
+}
+
+func (e Gender) IsValid() bool {
+	switch e {
+	case GenderMale, GenderFemale:
+		return true
+	}
+	return false
+}
+
+func (e Gender) String() string {
+	return string(e)
+}
+
+func (e *Gender) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Gender(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Gender", str)
+	}
+	return nil
+}
+
+func (e Gender) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }

@@ -13,6 +13,7 @@ import (
 	graph1 "github.com/Prayash07/practice_project/graph/generated"
 	"github.com/Prayash07/practice_project/graph/model"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // CreateJobAnnouncement is the resolver for the createJobAnnouncement field.
@@ -22,7 +23,26 @@ func (r *mutationResolver) CreateJobAnnouncement(ctx context.Context, input mode
 
 // CreateCompany is the resolver for the createCompany field.
 func (r *mutationResolver) CreateCompany(ctx context.Context, input model.CompanyObject) (*model.Company, error) {
-	panic(fmt.Errorf("not implemented: CreateCompany - createCompany"))
+	company := &models.Company{
+		Name:          input.Name,
+		Description:   input.Description,
+		NoOfEmployees: input.NumberOfEmployees,
+	}
+
+	err := company.Insert(ctx, r.Db, boil.Infer())
+
+	if err != nil {
+		return nil, err
+	}
+
+	gqlCompany := &model.Company{
+		ID:                company.ID,
+		Name:              company.Name,
+		Description:       company.Description,
+		NumberOfEmployees: company.NoOfEmployees,
+	}
+
+	return gqlCompany, nil
 }
 
 // CreateUser is the resolver for the createUser field.
@@ -69,19 +89,58 @@ func (r *queryResolver) JobAnnouncements(ctx context.Context) ([]*model.JobAnnou
 	//panic(fmt.Errorf("not implemented: JobAnnouncements - jobAnnouncements"))
 }
 
-// Company is the resolver for the company field.
-func (r *queryResolver) Company(ctx context.Context) ([]*model.Company, error) {
-	panic(fmt.Errorf("not implemented: Company - company"))
+// GetJobAnnouncement is the resolver for the getJobAnnouncement field.
+func (r *queryResolver) GetJobAnnouncement(ctx context.Context, id int) (*model.JobAnnouncement, error) {
+	panic(fmt.Errorf("not implemented: GetJobAnnouncement - getJobAnnouncement"))
 }
 
-// User is the resolver for the user field.
-func (r *queryResolver) User(ctx context.Context) ([]*model.User, error) {
+// Companies is the resolver for the companies field.
+func (r *queryResolver) Companies(ctx context.Context) ([]*model.Company, error) {
+	companies, _ := models.Companies().All(context.Background(), r.Db)
+
+	var companiesData []*model.Company
+
+	for _, company := range companies {
+		gqlCompany := &model.Company{
+			ID:                company.ID,
+			Name:              company.Name,
+			Description:       company.Description,
+			NumberOfEmployees: company.NoOfEmployees,
+		}
+		companiesData = append(companiesData, gqlCompany)
+	}
+
+	return companiesData, nil
+}
+
+// GetCompany is the resolver for the getCompany field.
+func (r *queryResolver) GetCompany(ctx context.Context, id int) (*model.Company, error) {
+	companyData, err := models.Companies(
+		qm.Where("id = ?", id),
+	).One(ctx, r.Db)
+
+	if err != nil {
+		return nil, err
+	}
+
+	company := &model.Company{
+		ID:                companyData.ID,
+		Name:              companyData.Name,
+		Description:       companyData.Description,
+		NumberOfEmployees: companyData.NoOfEmployees,
+	}
+	return company, nil
+}
+
+// Users is the resolver for the users field.
+func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	users, _ := models.Users().All(context.Background(), r.Db)
 
 	var usersData []*model.User
 
 	for _, user := range users {
 		userGql := &model.User{
+			ID:      user.ID,
 			Name:    user.Name,
 			Address: user.Address,
 		}

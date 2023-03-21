@@ -5,8 +5,10 @@ directive @goField(
 
 type Query {
     jobAnnouncements: [JobAnnouncement!]!
-    company: [Company!]!
-    user: [User!]!
+    getJobAnnouncement(id:Int!): JobAnnouncement!
+    companies: [Company!]!
+    getCompany(id:Int!): Company!
+    users: [User!]!
     getUser(id:ID!):User!
 }
 

@@ -2,6 +2,7 @@ type User {
     id: Int!
     name: String!
     address: String!
+    gender: Gender!
     education: [Education!]! @goField(forceResolver: true)
 }
 
@@ -11,3 +12,5 @@ input UserObject{
     degree_name: String!
     no_of_years_for_degree: Int!
 }
+
+enum Gender{Male, Female}

@@ -6,6 +6,7 @@ package resolver
 
 import (
 	"context"
+
 	"github.com/Prayash07/practice_project/database/models"
 	graph "github.com/Prayash07/practice_project/graph/generated"
 	"github.com/Prayash07/practice_project/graph/model"

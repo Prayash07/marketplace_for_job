@@ -3,6 +3,7 @@ type JobAnnouncement{
     title: String!
     description: String!
     url: String!
+    company:Company! @goField(forceResolver: true)
 }
 
 input JobAnnouncementObject{
