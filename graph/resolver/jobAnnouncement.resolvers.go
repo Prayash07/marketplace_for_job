@@ -6,11 +6,11 @@ package resolver
 
 import (
 	"context"
-	"github.com/Prayash07/practice_project/database/models"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
+	"github.com/Prayash07/practice_project/database/models"
 	graph "github.com/Prayash07/practice_project/graph/generated"
 	"github.com/Prayash07/practice_project/graph/model"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // Company is the resolver for the company field.

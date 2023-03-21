@@ -65,17 +65,14 @@ var UserWhere = struct {
 
 // UserRels is where relationship names are stored.
 var UserRels = struct {
-	UserIdEducations     string
-	UserJobAnnouncements string
+	UserIdEducations string
 }{
-	UserIdEducations:     "UserIdEducations",
-	UserJobAnnouncements: "UserJobAnnouncements",
+	UserIdEducations: "UserIdEducations",
 }
 
 // userR is where relationships are stored.
 type userR struct {
-	UserIdEducations     EducationSlice       `boil:"UserIdEducations" json:"UserIdEducations" toml:"UserIdEducations" yaml:"UserIdEducations"`
-	UserJobAnnouncements JobAnnouncementSlice `boil:"UserJobAnnouncements" json:"UserJobAnnouncements" toml:"UserJobAnnouncements" yaml:"UserJobAnnouncements"`
+	UserIdEducations EducationSlice `boil:"UserIdEducations" json:"UserIdEducations" toml:"UserIdEducations" yaml:"UserIdEducations"`
 }
 
 // NewStruct creates a new relationship struct
@@ -88,13 +85,6 @@ func (r *userR) GetUserIdEducations() EducationSlice {
 		return nil
 	}
 	return r.UserIdEducations
-}
-
-func (r *userR) GetUserJobAnnouncements() JobAnnouncementSlice {
-	if r == nil {
-		return nil
-	}
-	return r.UserJobAnnouncements
 }
 
 // userL is where Load methods for each relationship are stored.
@@ -420,20 +410,6 @@ func (o *User) UserIdEducations(mods ...qm.QueryMod) educationQuery {
 	return Educations(queryMods...)
 }
 
-// UserJobAnnouncements retrieves all the JobAnnouncement's JobAnnouncements with an executor via user_id column.
-func (o *User) UserJobAnnouncements(mods ...qm.QueryMod) jobAnnouncementQuery {
-	var queryMods []qm.QueryMod
-	if len(mods) != 0 {
-		queryMods = append(queryMods, mods...)
-	}
-
-	queryMods = append(queryMods,
-		qm.Where("`JobAnnouncement`.`user_id`=?", o.ID),
-	)
-
-	return JobAnnouncements(queryMods...)
-}
-
 // LoadUserIdEducations allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
 func (userL) LoadUserIdEducations(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
@@ -548,120 +524,6 @@ func (userL) LoadUserIdEducations(ctx context.Context, e boil.ContextExecutor, s
 	return nil
 }
 
-// LoadUserJobAnnouncements allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadUserJobAnnouncements(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
-	var slice []*User
-	var object *User
-
-	if singular {
-		var ok bool
-		object, ok = maybeUser.(*User)
-		if !ok {
-			object = new(User)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
-			}
-		}
-	} else {
-		s, ok := maybeUser.(*[]*User)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
-			}
-		}
-	}
-
-	args := make([]interface{}, 0, 1)
-	if singular {
-		if object.R == nil {
-			object.R = &userR{}
-		}
-		args = append(args, object.ID)
-	} else {
-	Outer:
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &userR{}
-			}
-
-			for _, a := range args {
-				if a == obj.ID {
-					continue Outer
-				}
-			}
-
-			args = append(args, obj.ID)
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	query := NewQuery(
-		qm.From(`JobAnnouncement`),
-		qm.WhereIn(`JobAnnouncement.user_id in ?`, args...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load JobAnnouncement")
-	}
-
-	var resultSlice []*JobAnnouncement
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice JobAnnouncement")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on JobAnnouncement")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for JobAnnouncement")
-	}
-
-	if len(jobAnnouncementAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-	if singular {
-		object.R.UserJobAnnouncements = resultSlice
-		for _, foreign := range resultSlice {
-			if foreign.R == nil {
-				foreign.R = &jobAnnouncementR{}
-			}
-			foreign.R.User = object
-		}
-		return nil
-	}
-
-	for _, foreign := range resultSlice {
-		for _, local := range slice {
-			if local.ID == foreign.UserID {
-				local.R.UserJobAnnouncements = append(local.R.UserJobAnnouncements, foreign)
-				if foreign.R == nil {
-					foreign.R = &jobAnnouncementR{}
-				}
-				foreign.R.User = local
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
 // AddUserIdEducationsG adds the given related objects to the existing relationships
 // of the User, optionally inserting them as new records.
 // Appends related to o.R.UserIdEducations.
@@ -719,68 +581,6 @@ func (o *User) AddUserIdEducations(ctx context.Context, exec boil.ContextExecuto
 			}
 		} else {
 			rel.R.UserIdUser = o
-		}
-	}
-	return nil
-}
-
-// AddUserJobAnnouncementsG adds the given related objects to the existing relationships
-// of the User, optionally inserting them as new records.
-// Appends related to o.R.UserJobAnnouncements.
-// Sets related.R.User appropriately.
-// Uses the global database handle.
-func (o *User) AddUserJobAnnouncementsG(ctx context.Context, insert bool, related ...*JobAnnouncement) error {
-	return o.AddUserJobAnnouncements(ctx, boil.GetContextDB(), insert, related...)
-}
-
-// AddUserJobAnnouncements adds the given related objects to the existing relationships
-// of the User, optionally inserting them as new records.
-// Appends related to o.R.UserJobAnnouncements.
-// Sets related.R.User appropriately.
-func (o *User) AddUserJobAnnouncements(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*JobAnnouncement) error {
-	var err error
-	for _, rel := range related {
-		if insert {
-			rel.UserID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
-				return errors.Wrap(err, "failed to insert into foreign table")
-			}
-		} else {
-			updateQuery := fmt.Sprintf(
-				"UPDATE `JobAnnouncement` SET %s WHERE %s",
-				strmangle.SetParamNames("`", "`", 0, []string{"user_id"}),
-				strmangle.WhereClause("`", "`", 0, jobAnnouncementPrimaryKeyColumns),
-			)
-			values := []interface{}{o.ID, rel.ID}
-
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
-			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-				return errors.Wrap(err, "failed to update foreign table")
-			}
-
-			rel.UserID = o.ID
-		}
-	}
-
-	if o.R == nil {
-		o.R = &userR{
-			UserJobAnnouncements: related,
-		}
-	} else {
-		o.R.UserJobAnnouncements = append(o.R.UserJobAnnouncements, related...)
-	}
-
-	for _, rel := range related {
-		if rel.R == nil {
-			rel.R = &jobAnnouncementR{
-				User: o,
-			}
-		} else {
-			rel.R.User = o
 		}
 	}
 	return nil

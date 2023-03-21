@@ -1,4 +1,3 @@
-
 -- +migrate Up
 CREATE TABLE IF NOT EXISTS `Company`(
     `id` INT NOT NULL UNIQUE AUTO_INCREMENT,

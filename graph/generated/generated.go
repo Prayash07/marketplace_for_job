@@ -91,10 +91,9 @@ type ComplexityRoot struct {
 	}
 
 	Position struct {
-		Experience      func(childComplexity int) int
-		ID              func(childComplexity int) int
-		JobAnnouncement func(childComplexity int) int
-		Name            func(childComplexity int) int
+		Experience func(childComplexity int) int
+		ID         func(childComplexity int) int
+		Name       func(childComplexity int) int
 	}
 
 	Query struct {
@@ -348,13 +347,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Position.ID(childComplexity), true
 
-	case "Position.job_announcement":
-		if e.complexity.Position.JobAnnouncement == nil {
-			break
-		}
-
-		return e.complexity.Position.JobAnnouncement(childComplexity), true
-
 	case "Position.name":
 		if e.complexity.Position.Name == nil {
 			break
@@ -499,6 +491,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCompanyObject,
 		ec.unmarshalInputJobAnnouncementObject,
+		ec.unmarshalInputPositionObject,
 		ec.unmarshalInputUserObject,
 	)
 	first := true
@@ -573,7 +566,7 @@ input CompanyObject{
     numberOfEmployees: Int!
 }`, BuiltIn: false},
 	{Name: "../schema/jobAnnouncement/jobAnnouncement.graphql", Input: `type JobAnnouncement{
-    id: ID!
+    id: Int!
     title: String!
     description: String!
     url: String!
@@ -584,8 +577,8 @@ input JobAnnouncementObject{
     title: String!
     description:String!
     url:String!
-    position: [ID!]!
-    company:ID!
+    position: [PositionObject!]!
+    companyId:Int!
 }`, BuiltIn: false},
 	{Name: "../schema/jobAnnouncement/jobAnnouncementPosition.graphql", Input: `type JobAnnouncementPositions{
     jobAnnouncement: JobAnnouncement
@@ -599,7 +592,11 @@ input JobAnnouncementObject{
     id:ID!
     name:String!
     experience: Int!
-    job_announcement: JobAnnouncement!
+}
+
+input PositionObject{
+    name:String!
+    experience: Int!
 }`, BuiltIn: false},
 	{Name: "../schema/main/schemas.graphql", Input: `directive @goField(
     forceResolver: Boolean
@@ -1300,8 +1297,6 @@ func (ec *executionContext) fieldContext_Experience_position(ctx context.Context
 				return ec.fieldContext_Position_name(ctx, field)
 			case "experience":
 				return ec.fieldContext_Position_experience(ctx, field)
-			case "job_announcement":
-				return ec.fieldContext_Position_job_announcement(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Position", field.Name)
 		},
@@ -1335,9 +1330,9 @@ func (ec *executionContext) _JobAnnouncement_id(ctx context.Context, field graph
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_JobAnnouncement_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1347,7 +1342,7 @@ func (ec *executionContext) fieldContext_JobAnnouncement_id(ctx context.Context,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1634,8 +1629,6 @@ func (ec *executionContext) fieldContext_JobAnnouncementPositions_position(ctx c
 				return ec.fieldContext_Position_name(ctx, field)
 			case "experience":
 				return ec.fieldContext_Position_experience(ctx, field)
-			case "job_announcement":
-				return ec.fieldContext_Position_job_announcement(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Position", field.Name)
 		},
@@ -2073,62 +2066,6 @@ func (ec *executionContext) fieldContext_Position_experience(ctx context.Context
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Position_job_announcement(ctx context.Context, field graphql.CollectedField, obj *model.Position) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Position_job_announcement(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.JobAnnouncement, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.JobAnnouncement)
-	fc.Result = res
-	return ec.marshalNJobAnnouncement2ᚖgithubᚗcomᚋPrayash07ᚋpractice_projectᚋgraphᚋmodelᚐJobAnnouncement(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Position_job_announcement(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Position",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_JobAnnouncement_id(ctx, field)
-			case "title":
-				return ec.fieldContext_JobAnnouncement_title(ctx, field)
-			case "description":
-				return ec.fieldContext_JobAnnouncement_description(ctx, field)
-			case "url":
-				return ec.fieldContext_JobAnnouncement_url(ctx, field)
-			case "company":
-				return ec.fieldContext_JobAnnouncement_company(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type JobAnnouncement", field.Name)
 		},
 	}
 	return fc, nil
@@ -3111,8 +3048,6 @@ func (ec *executionContext) fieldContext_UsersAppliedInVacancy_position(ctx cont
 				return ec.fieldContext_Position_name(ctx, field)
 			case "experience":
 				return ec.fieldContext_Position_experience(ctx, field)
-			case "job_announcement":
-				return ec.fieldContext_Position_job_announcement(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Position", field.Name)
 		},
@@ -4944,7 +4879,7 @@ func (ec *executionContext) unmarshalInputJobAnnouncementObject(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "description", "url", "position", "company"}
+	fieldsInOrder := [...]string{"title", "description", "url", "position", "companyId"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4979,15 +4914,51 @@ func (ec *executionContext) unmarshalInputJobAnnouncementObject(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("position"))
-			it.Position, err = ec.unmarshalNID2ᚕstringᚄ(ctx, v)
+			it.Position, err = ec.unmarshalNPositionObject2ᚕᚖgithubᚗcomᚋPrayash07ᚋpractice_projectᚋgraphᚋmodelᚐPositionObjectᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "company":
+		case "companyId":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("company"))
-			it.Company, err = ec.unmarshalNID2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("companyId"))
+			it.CompanyID, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputPositionObject(ctx context.Context, obj interface{}) (model.PositionObject, error) {
+	var it model.PositionObject
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "experience"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "experience":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("experience"))
+			it.Experience, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5408,13 +5379,6 @@ func (ec *executionContext) _Position(ctx context.Context, sel ast.SelectionSet,
 		case "experience":
 
 			out.Values[i] = ec._Position_experience(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "job_announcement":
-
-			out.Values[i] = ec._Position_job_announcement(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -6210,38 +6174,6 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) unmarshalNID2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
-	var vSlice []interface{}
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]string, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNID2string(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalNID2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalNID2string(ctx, sel, v[i])
-	}
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -6328,6 +6260,28 @@ func (ec *executionContext) marshalNPosition2ᚖgithubᚗcomᚋPrayash07ᚋpract
 		return graphql.Null
 	}
 	return ec._Position(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNPositionObject2ᚕᚖgithubᚗcomᚋPrayash07ᚋpractice_projectᚋgraphᚋmodelᚐPositionObjectᚄ(ctx context.Context, v interface{}) ([]*model.PositionObject, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*model.PositionObject, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNPositionObject2ᚖgithubᚗcomᚋPrayash07ᚋpractice_projectᚋgraphᚋmodelᚐPositionObject(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNPositionObject2ᚖgithubᚗcomᚋPrayash07ᚋpractice_projectᚋgraphᚋmodelᚐPositionObject(ctx context.Context, v interface{}) (*model.PositionObject, error) {
+	res, err := ec.unmarshalInputPositionObject(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

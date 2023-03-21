@@ -23,63 +23,70 @@ import (
 
 // JobAnnouncement is an object representing the database table.
 type JobAnnouncement struct {
-	ID         int    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	DegreeName string `boil:"degree_name" json:"degree_name" toml:"degree_name" yaml:"degree_name"`
-	Years      int    `boil:"years" json:"years" toml:"years" yaml:"years"`
-	UserID     int    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	ID          int    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Title       string `boil:"title" json:"title" toml:"title" yaml:"title"`
+	Description string `boil:"description" json:"description" toml:"description" yaml:"description"`
+	URL         string `boil:"url" json:"url" toml:"url" yaml:"url"`
+	CompanyID   int    `boil:"company_id" json:"company_id" toml:"company_id" yaml:"company_id"`
 
 	R *jobAnnouncementR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L jobAnnouncementL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var JobAnnouncementColumns = struct {
-	ID         string
-	DegreeName string
-	Years      string
-	UserID     string
+	ID          string
+	Title       string
+	Description string
+	URL         string
+	CompanyID   string
 }{
-	ID:         "id",
-	DegreeName: "degree_name",
-	Years:      "years",
-	UserID:     "user_id",
+	ID:          "id",
+	Title:       "title",
+	Description: "description",
+	URL:         "url",
+	CompanyID:   "company_id",
 }
 
 var JobAnnouncementTableColumns = struct {
-	ID         string
-	DegreeName string
-	Years      string
-	UserID     string
+	ID          string
+	Title       string
+	Description string
+	URL         string
+	CompanyID   string
 }{
-	ID:         "JobAnnouncement.id",
-	DegreeName: "JobAnnouncement.degree_name",
-	Years:      "JobAnnouncement.years",
-	UserID:     "JobAnnouncement.user_id",
+	ID:          "JobAnnouncement.id",
+	Title:       "JobAnnouncement.title",
+	Description: "JobAnnouncement.description",
+	URL:         "JobAnnouncement.url",
+	CompanyID:   "JobAnnouncement.company_id",
 }
 
 // Generated where
 
 var JobAnnouncementWhere = struct {
-	ID         whereHelperint
-	DegreeName whereHelperstring
-	Years      whereHelperint
-	UserID     whereHelperint
+	ID          whereHelperint
+	Title       whereHelperstring
+	Description whereHelperstring
+	URL         whereHelperstring
+	CompanyID   whereHelperint
 }{
-	ID:         whereHelperint{field: "`JobAnnouncement`.`id`"},
-	DegreeName: whereHelperstring{field: "`JobAnnouncement`.`degree_name`"},
-	Years:      whereHelperint{field: "`JobAnnouncement`.`years`"},
-	UserID:     whereHelperint{field: "`JobAnnouncement`.`user_id`"},
+	ID:          whereHelperint{field: "`JobAnnouncement`.`id`"},
+	Title:       whereHelperstring{field: "`JobAnnouncement`.`title`"},
+	Description: whereHelperstring{field: "`JobAnnouncement`.`description`"},
+	URL:         whereHelperstring{field: "`JobAnnouncement`.`url`"},
+	CompanyID:   whereHelperint{field: "`JobAnnouncement`.`company_id`"},
 }
 
 // JobAnnouncementRels is where relationship names are stored.
 var JobAnnouncementRels = struct {
-	User string
+	Company string
 }{
-	User: "User",
+	Company: "Company",
 }
 
 // jobAnnouncementR is where relationships are stored.
 type jobAnnouncementR struct {
-	User *User `boil:"User" json:"User" toml:"User" yaml:"User"`
+	Company *Company `boil:"Company" json:"Company" toml:"Company" yaml:"Company"`
 }
 
 // NewStruct creates a new relationship struct
@@ -87,19 +94,19 @@ func (*jobAnnouncementR) NewStruct() *jobAnnouncementR {
 	return &jobAnnouncementR{}
 }
 
-func (r *jobAnnouncementR) GetUser() *User {
+func (r *jobAnnouncementR) GetCompany() *Company {
 	if r == nil {
 		return nil
 	}
-	return r.User
+	return r.Company
 }
 
 // jobAnnouncementL is where Load methods for each relationship are stored.
 type jobAnnouncementL struct{}
 
 var (
-	jobAnnouncementAllColumns            = []string{"id", "degree_name", "years", "user_id"}
-	jobAnnouncementColumnsWithoutDefault = []string{"degree_name", "years", "user_id"}
+	jobAnnouncementAllColumns            = []string{"id", "title", "description", "url", "company_id"}
+	jobAnnouncementColumnsWithoutDefault = []string{"title", "description", "url", "company_id"}
 	jobAnnouncementColumnsWithDefault    = []string{"id"}
 	jobAnnouncementPrimaryKeyColumns     = []string{"id"}
 	jobAnnouncementGeneratedColumns      = []string{}
@@ -403,20 +410,20 @@ func (q jobAnnouncementQuery) Exists(ctx context.Context, exec boil.ContextExecu
 	return count > 0, nil
 }
 
-// User pointed to by the foreign key.
-func (o *JobAnnouncement) User(mods ...qm.QueryMod) userQuery {
+// Company pointed to by the foreign key.
+func (o *JobAnnouncement) Company(mods ...qm.QueryMod) companyQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("`ID` = ?", o.UserID),
+		qm.Where("`id` = ?", o.CompanyID),
 	}
 
 	queryMods = append(queryMods, mods...)
 
-	return Users(queryMods...)
+	return Companies(queryMods...)
 }
 
-// LoadUser allows an eager lookup of values, cached into the
+// LoadCompany allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (jobAnnouncementL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeJobAnnouncement interface{}, mods queries.Applicator) error {
+func (jobAnnouncementL) LoadCompany(ctx context.Context, e boil.ContextExecutor, singular bool, maybeJobAnnouncement interface{}, mods queries.Applicator) error {
 	var slice []*JobAnnouncement
 	var object *JobAnnouncement
 
@@ -447,7 +454,7 @@ func (jobAnnouncementL) LoadUser(ctx context.Context, e boil.ContextExecutor, si
 		if object.R == nil {
 			object.R = &jobAnnouncementR{}
 		}
-		args = append(args, object.UserID)
+		args = append(args, object.CompanyID)
 
 	} else {
 	Outer:
@@ -457,12 +464,12 @@ func (jobAnnouncementL) LoadUser(ctx context.Context, e boil.ContextExecutor, si
 			}
 
 			for _, a := range args {
-				if a == obj.UserID {
+				if a == obj.CompanyID {
 					continue Outer
 				}
 			}
 
-			args = append(args, obj.UserID)
+			args = append(args, obj.CompanyID)
 
 		}
 	}
@@ -472,8 +479,8 @@ func (jobAnnouncementL) LoadUser(ctx context.Context, e boil.ContextExecutor, si
 	}
 
 	query := NewQuery(
-		qm.From(`User`),
-		qm.WhereIn(`User.ID in ?`, args...),
+		qm.From(`Company`),
+		qm.WhereIn(`Company.id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -481,22 +488,22 @@ func (jobAnnouncementL) LoadUser(ctx context.Context, e boil.ContextExecutor, si
 
 	results, err := query.QueryContext(ctx, e)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load User")
+		return errors.Wrap(err, "failed to eager load Company")
 	}
 
-	var resultSlice []*User
+	var resultSlice []*Company
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice User")
+		return errors.Wrap(err, "failed to bind eager loaded slice Company")
 	}
 
 	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for User")
+		return errors.Wrap(err, "failed to close results of eager load for Company")
 	}
 	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for User")
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for Company")
 	}
 
-	if len(userAfterSelectHooks) != 0 {
+	if len(companyAfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
 				return err
@@ -510,22 +517,22 @@ func (jobAnnouncementL) LoadUser(ctx context.Context, e boil.ContextExecutor, si
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.User = foreign
+		object.R.Company = foreign
 		if foreign.R == nil {
-			foreign.R = &userR{}
+			foreign.R = &companyR{}
 		}
-		foreign.R.UserJobAnnouncements = append(foreign.R.UserJobAnnouncements, object)
+		foreign.R.CompanyJobAnnouncements = append(foreign.R.CompanyJobAnnouncements, object)
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if local.UserID == foreign.ID {
-				local.R.User = foreign
+			if local.CompanyID == foreign.ID {
+				local.R.Company = foreign
 				if foreign.R == nil {
-					foreign.R = &userR{}
+					foreign.R = &companyR{}
 				}
-				foreign.R.UserJobAnnouncements = append(foreign.R.UserJobAnnouncements, local)
+				foreign.R.CompanyJobAnnouncements = append(foreign.R.CompanyJobAnnouncements, local)
 				break
 			}
 		}
@@ -534,18 +541,18 @@ func (jobAnnouncementL) LoadUser(ctx context.Context, e boil.ContextExecutor, si
 	return nil
 }
 
-// SetUserG of the jobAnnouncement to the related item.
-// Sets o.R.User to related.
-// Adds o to related.R.UserJobAnnouncements.
+// SetCompanyG of the jobAnnouncement to the related item.
+// Sets o.R.Company to related.
+// Adds o to related.R.CompanyJobAnnouncements.
 // Uses the global database handle.
-func (o *JobAnnouncement) SetUserG(ctx context.Context, insert bool, related *User) error {
-	return o.SetUser(ctx, boil.GetContextDB(), insert, related)
+func (o *JobAnnouncement) SetCompanyG(ctx context.Context, insert bool, related *Company) error {
+	return o.SetCompany(ctx, boil.GetContextDB(), insert, related)
 }
 
-// SetUser of the jobAnnouncement to the related item.
-// Sets o.R.User to related.
-// Adds o to related.R.UserJobAnnouncements.
-func (o *JobAnnouncement) SetUser(ctx context.Context, exec boil.ContextExecutor, insert bool, related *User) error {
+// SetCompany of the jobAnnouncement to the related item.
+// Sets o.R.Company to related.
+// Adds o to related.R.CompanyJobAnnouncements.
+func (o *JobAnnouncement) SetCompany(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Company) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -555,7 +562,7 @@ func (o *JobAnnouncement) SetUser(ctx context.Context, exec boil.ContextExecutor
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE `JobAnnouncement` SET %s WHERE %s",
-		strmangle.SetParamNames("`", "`", 0, []string{"user_id"}),
+		strmangle.SetParamNames("`", "`", 0, []string{"company_id"}),
 		strmangle.WhereClause("`", "`", 0, jobAnnouncementPrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -569,21 +576,21 @@ func (o *JobAnnouncement) SetUser(ctx context.Context, exec boil.ContextExecutor
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	o.UserID = related.ID
+	o.CompanyID = related.ID
 	if o.R == nil {
 		o.R = &jobAnnouncementR{
-			User: related,
+			Company: related,
 		}
 	} else {
-		o.R.User = related
+		o.R.Company = related
 	}
 
 	if related.R == nil {
-		related.R = &userR{
-			UserJobAnnouncements: JobAnnouncementSlice{o},
+		related.R = &companyR{
+			CompanyJobAnnouncements: JobAnnouncementSlice{o},
 		}
 	} else {
-		related.R.UserJobAnnouncements = append(related.R.UserJobAnnouncements, o)
+		related.R.CompanyJobAnnouncements = append(related.R.CompanyJobAnnouncements, o)
 	}
 
 	return nil

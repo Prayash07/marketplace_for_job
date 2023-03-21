@@ -1,5 +1,5 @@
 type JobAnnouncement{
-    id: ID!
+    id: Int!
     title: String!
     description: String!
     url: String!
@@ -10,6 +10,6 @@ input JobAnnouncementObject{
     title: String!
     description:String!
     url:String!
-    position: [ID!]!
-    company:ID!
+    position: [PositionObject!]!
+    companyId:Int!
 }

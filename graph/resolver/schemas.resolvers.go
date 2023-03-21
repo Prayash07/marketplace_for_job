@@ -18,7 +18,21 @@ import (
 
 // CreateJobAnnouncement is the resolver for the createJobAnnouncement field.
 func (r *mutationResolver) CreateJobAnnouncement(ctx context.Context, input model.JobAnnouncementObject) (*model.JobAnnouncement, error) {
-	panic(fmt.Errorf("not implemented: CreateJobAnnouncement - createJobAnnouncement"))
+	jobAnnouncement := &models.JobAnnouncement{
+		Title:       input.Title,
+		Description: input.Description,
+		URL:         input.URL,
+		CompanyID:   input.CompanyID,
+	}
+
+	genJobAnnounceMent := &model.JobAnnouncement{
+		ID:          jobAnnouncement.ID,
+		Title:       jobAnnouncement.Title,
+		Description: jobAnnouncement.Description,
+		URL:         jobAnnouncement.URL,
+	}
+
+	return genJobAnnounceMent, nil
 }
 
 // CreateCompany is the resolver for the createCompany field.
@@ -80,7 +94,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserObje
 func (r *queryResolver) JobAnnouncements(ctx context.Context) ([]*model.JobAnnouncement, error) {
 	var jobAnnouncement []*model.JobAnnouncement
 	jobAnnouncement = append(jobAnnouncement, &model.JobAnnouncement{
-		ID:          "1",
+		ID:          1,
 		Title:       "Job Announcement test",
 		Description: "Job Announcement description",
 		URL:         "https://www.youbube.com",

@@ -35,7 +35,7 @@ type Experience struct {
 }
 
 type JobAnnouncement struct {
-	ID          string   `json:"id"`
+	ID          int      `json:"id"`
 	Title       string   `json:"title"`
 	Description string   `json:"description"`
 	URL         string   `json:"url"`
@@ -43,11 +43,11 @@ type JobAnnouncement struct {
 }
 
 type JobAnnouncementObject struct {
-	Title       string   `json:"title"`
-	Description string   `json:"description"`
-	URL         string   `json:"url"`
-	Position    []string `json:"position"`
-	Company     string   `json:"company"`
+	Title       string            `json:"title"`
+	Description string            `json:"description"`
+	URL         string            `json:"url"`
+	Position    []*PositionObject `json:"position"`
+	CompanyID   int               `json:"companyId"`
 }
 
 type JobAnnouncementPositions struct {
@@ -61,10 +61,14 @@ type JobsInCompany struct {
 }
 
 type Position struct {
-	ID              string           `json:"id"`
-	Name            string           `json:"name"`
-	Experience      int              `json:"experience"`
-	JobAnnouncement *JobAnnouncement `json:"job_announcement"`
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	Experience int    `json:"experience"`
+}
+
+type PositionObject struct {
+	Name       string `json:"name"`
+	Experience int    `json:"experience"`
 }
 
 type User struct {
