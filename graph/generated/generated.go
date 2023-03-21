@@ -574,6 +574,7 @@ input CompanyObject{
 }
 
 input JobAnnouncementObject{
+    id:Int!
     title: String!
     description:String!
     url:String!
@@ -591,12 +592,12 @@ input JobAnnouncementObject{
 	{Name: "../schema/jobAnnouncement/position.graphql", Input: `type Position{
     id:ID!
     name:String!
-    experience: Int!
+    experience: String!
 }
 
 input PositionObject{
     name:String!
-    experience: Int!
+    experience: String!
 }`, BuiltIn: false},
 	{Name: "../schema/main/schemas.graphql", Input: `directive @goField(
     forceResolver: Boolean
@@ -2053,9 +2054,9 @@ func (ec *executionContext) _Position_experience(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Position_experience(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2065,7 +2066,7 @@ func (ec *executionContext) fieldContext_Position_experience(ctx context.Context
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4879,13 +4880,21 @@ func (ec *executionContext) unmarshalInputJobAnnouncementObject(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "description", "url", "position", "companyId"}
+	fieldsInOrder := [...]string{"id", "title", "description", "url", "position", "companyId"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "title":
 			var err error
 
@@ -4958,7 +4967,7 @@ func (ec *executionContext) unmarshalInputPositionObject(ctx context.Context, ob
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("experience"))
-			it.Experience, err = ec.unmarshalNInt2int(ctx, v)
+			it.Experience, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}

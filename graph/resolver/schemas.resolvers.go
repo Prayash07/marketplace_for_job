@@ -25,6 +25,23 @@ func (r *mutationResolver) CreateJobAnnouncement(ctx context.Context, input mode
 		CompanyID:   input.CompanyID,
 	}
 
+	err := jobAnnouncement.Insert(ctx, r.Db, boil.Infer())
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, position := range input.Position {
+		positionData := &models.Position{
+			Name:       position.Name,
+			Experience: position.Experience,
+		}
+		err := positionData.Insert(ctx, r.Db, boil.Infer())
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	genJobAnnounceMent := &model.JobAnnouncement{
 		ID:          jobAnnouncement.ID,
 		Title:       jobAnnouncement.Title,
@@ -92,15 +109,24 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input *model.UserObje
 
 // JobAnnouncements is the resolver for the jobAnnouncements field.
 func (r *queryResolver) JobAnnouncements(ctx context.Context) ([]*model.JobAnnouncement, error) {
-	var jobAnnouncement []*model.JobAnnouncement
-	jobAnnouncement = append(jobAnnouncement, &model.JobAnnouncement{
-		ID:          1,
-		Title:       "Job Announcement test",
-		Description: "Job Announcement description",
-		URL:         "https://www.youbube.com",
-	})
-	return jobAnnouncement, nil
-	//panic(fmt.Errorf("not implemented: JobAnnouncements - jobAnnouncements"))
+	getjobAnnouncements, err := models.JobAnnouncements().All(context.Background(), r.Db)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var jobAnnouncements []*model.JobAnnouncement
+
+	for _, jobAnnouncement := range getjobAnnouncements {
+		gqlJobAnnouncement := &model.JobAnnouncement{
+			ID:          jobAnnouncement.ID,
+			Title:       jobAnnouncement.Title,
+			Description: jobAnnouncement.Description,
+			URL:         jobAnnouncement.URL,
+		}
+		jobAnnouncements = append(jobAnnouncements, gqlJobAnnouncement)
+	}
+	return jobAnnouncements, nil
 }
 
 // GetJobAnnouncement is the resolver for the getJobAnnouncement field.

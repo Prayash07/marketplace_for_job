@@ -7,12 +7,14 @@ var TableNames = struct {
 	Company         string
 	Education       string
 	JobAnnouncement string
+	Position        string
 	User            string
 	GorpMigrations  string
 }{
 	Company:         "Company",
 	Education:       "Education",
 	JobAnnouncement: "JobAnnouncement",
+	Position:        "Position",
 	User:            "User",
 	GorpMigrations:  "gorp_migrations",
 }

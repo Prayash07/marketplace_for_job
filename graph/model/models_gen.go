@@ -43,6 +43,7 @@ type JobAnnouncement struct {
 }
 
 type JobAnnouncementObject struct {
+	ID          int               `json:"id"`
 	Title       string            `json:"title"`
 	Description string            `json:"description"`
 	URL         string            `json:"url"`
@@ -63,12 +64,12 @@ type JobsInCompany struct {
 type Position struct {
 	ID         string `json:"id"`
 	Name       string `json:"name"`
-	Experience int    `json:"experience"`
+	Experience string `json:"experience"`
 }
 
 type PositionObject struct {
 	Name       string `json:"name"`
-	Experience int    `json:"experience"`
+	Experience string `json:"experience"`
 }
 
 type User struct {

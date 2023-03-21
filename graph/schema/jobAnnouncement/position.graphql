@@ -1,10 +1,10 @@
 type Position{
     id:ID!
     name:String!
-    experience: Int!
+    experience: String!
 }
 
 input PositionObject{
     name:String!
-    experience: Int!
+    experience: String!
 }
