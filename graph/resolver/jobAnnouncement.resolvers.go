@@ -6,31 +6,15 @@ package resolver
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/Prayash07/practice_project/database/models"
 	graph "github.com/Prayash07/practice_project/graph/generated"
 	"github.com/Prayash07/practice_project/graph/model"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 // Company is the resolver for the company field.
 func (r *jobAnnouncementResolver) Company(ctx context.Context, obj *model.JobAnnouncement) (*model.Company, error) {
-	companyData, err := models.Companies(
-		qm.Where("id = ?", obj.ID),
-	).One(ctx, r.Db)
-
-	if err != nil {
-		return nil, err
-	}
-
-	companyInfo := &model.Company{
-		ID:                companyData.ID,
-		Name:              companyData.Name,
-		Description:       companyData.Description,
-		NumberOfEmployees: companyData.NoOfEmployees,
-	}
-
-	return companyInfo, nil
+	panic(fmt.Errorf("not implemented: Company - company"))
 }
 
 // JobAnnouncement returns graph.JobAnnouncementResolver implementation.

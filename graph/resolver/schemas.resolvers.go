@@ -6,7 +6,6 @@ package resolver
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Prayash07/practice_project/database/models"
 	"github.com/Prayash07/practice_project/domain/user"
@@ -131,7 +130,17 @@ func (r *queryResolver) JobAnnouncements(ctx context.Context) ([]*model.JobAnnou
 
 // GetJobAnnouncement is the resolver for the getJobAnnouncement field.
 func (r *queryResolver) GetJobAnnouncement(ctx context.Context, id int) (*model.JobAnnouncement, error) {
-	panic(fmt.Errorf("not implemented: GetJobAnnouncement - getJobAnnouncement"))
+	getJobAnnouncements, _ := models.JobAnnouncements(qm.Where("id=?", id)).One(ctx, r.Db)
+
+	var jobAnnouncement *model.JobAnnouncement
+
+	jobAnnouncement = &model.JobAnnouncement{
+		ID:          getJobAnnouncements.ID,
+		Title:       getJobAnnouncements.Title,
+		Description: getJobAnnouncements.Description,
+		URL:         getJobAnnouncements.URL,
+	}
+	return jobAnnouncement, nil
 }
 
 // Companies is the resolver for the companies field.
@@ -193,6 +202,27 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 // GetUser is the resolver for the getUser field.
 func (r *queryResolver) GetUser(ctx context.Context, id string) (*model.User, error) {
 	return user.FetchUserById(ctx, id, r.Db)
+}
+
+// Positions is the resolver for the positions field.
+func (r *queryResolver) Positions(ctx context.Context) ([]*model.Position, error) {
+	positions, err := models.Positions().All(context.Background(), r.Db)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var positionData []*model.Position
+
+	for _, position := range positions {
+		individualPosition := &model.Position{
+			ID:         position.ID,
+			Name:       position.Name,
+			Experience: position.Experience,
+		}
+		positionData = append(positionData, individualPosition)
+	}
+	return positionData, nil
 }
 
 // Mutation returns graph1.MutationResolver implementation.

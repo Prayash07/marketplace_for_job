@@ -36,6 +36,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Company() CompanyResolver
 	JobAnnouncement() JobAnnouncementResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
@@ -49,6 +50,7 @@ type ComplexityRoot struct {
 	Company struct {
 		Description       func(childComplexity int) int
 		ID                func(childComplexity int) int
+		JobAnnouncement   func(childComplexity int) int
 		Name              func(childComplexity int) int
 		NumberOfEmployees func(childComplexity int) int
 	}
@@ -102,6 +104,7 @@ type ComplexityRoot struct {
 		GetJobAnnouncement func(childComplexity int, id int) int
 		GetUser            func(childComplexity int, id string) int
 		JobAnnouncements   func(childComplexity int) int
+		Positions          func(childComplexity int) int
 		Users              func(childComplexity int) int
 	}
 
@@ -122,6 +125,9 @@ type ComplexityRoot struct {
 	}
 }
 
+type CompanyResolver interface {
+	JobAnnouncement(ctx context.Context, obj *model.Company) ([]*model.JobAnnouncement, error)
+}
 type JobAnnouncementResolver interface {
 	Company(ctx context.Context, obj *model.JobAnnouncement) (*model.Company, error)
 }
@@ -137,6 +143,7 @@ type QueryResolver interface {
 	GetCompany(ctx context.Context, id int) (*model.Company, error)
 	Users(ctx context.Context) ([]*model.User, error)
 	GetUser(ctx context.Context, id string) (*model.User, error)
+	Positions(ctx context.Context) ([]*model.Position, error)
 }
 type UserResolver interface {
 	Education(ctx context.Context, obj *model.User) ([]*model.Education, error)
@@ -170,6 +177,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Company.ID(childComplexity), true
+
+	case "Company.jobAnnouncement":
+		if e.complexity.Company.JobAnnouncement == nil {
+			break
+		}
+
+		return e.complexity.Company.JobAnnouncement(childComplexity), true
 
 	case "Company.name":
 		if e.complexity.Company.Name == nil {
@@ -404,6 +418,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.JobAnnouncements(childComplexity), true
 
+	case "Query.positions":
+		if e.complexity.Query.Positions == nil {
+			break
+		}
+
+		return e.complexity.Query.Positions(childComplexity), true
+
 	case "Query.users":
 		if e.complexity.Query.Users == nil {
 			break
@@ -558,6 +579,7 @@ var sources = []*ast.Source{
     name: String!
     description: String!
     numberOfEmployees: Int!
+    jobAnnouncement: [JobAnnouncement]! @goField(forceResolver: true)
 }
 
 input CompanyObject{
@@ -574,7 +596,6 @@ input CompanyObject{
 }
 
 input JobAnnouncementObject{
-    id:Int!
     title: String!
     description:String!
     url:String!
@@ -590,7 +611,7 @@ input JobAnnouncementObject{
     company: Company
 }`, BuiltIn: false},
 	{Name: "../schema/jobAnnouncement/position.graphql", Input: `type Position{
-    id:ID!
+    id:Int!
     name:String!
     experience: String!
 }
@@ -611,6 +632,7 @@ type Query {
     getCompany(id:Int!): Company!
     users: [User!]!
     getUser(id:ID!):User!
+    positions: [Position!]!
 }
 
 type Mutation {
@@ -979,6 +1001,62 @@ func (ec *executionContext) fieldContext_Company_numberOfEmployees(ctx context.C
 	return fc, nil
 }
 
+func (ec *executionContext) _Company_jobAnnouncement(ctx context.Context, field graphql.CollectedField, obj *model.Company) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Company_jobAnnouncement(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Company().JobAnnouncement(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.JobAnnouncement)
+	fc.Result = res
+	return ec.marshalNJobAnnouncement2ᚕᚖgithubᚗcomᚋPrayash07ᚋpractice_projectᚋgraphᚋmodelᚐJobAnnouncement(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Company_jobAnnouncement(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Company",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_JobAnnouncement_id(ctx, field)
+			case "title":
+				return ec.fieldContext_JobAnnouncement_title(ctx, field)
+			case "description":
+				return ec.fieldContext_JobAnnouncement_description(ctx, field)
+			case "url":
+				return ec.fieldContext_JobAnnouncement_url(ctx, field)
+			case "company":
+				return ec.fieldContext_JobAnnouncement_company(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type JobAnnouncement", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Education_id(ctx context.Context, field graphql.CollectedField, obj *model.Education) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Education_id(ctx, field)
 	if err != nil {
@@ -1246,6 +1324,8 @@ func (ec *executionContext) fieldContext_Experience_company(ctx context.Context,
 				return ec.fieldContext_Company_description(ctx, field)
 			case "numberOfEmployees":
 				return ec.fieldContext_Company_numberOfEmployees(ctx, field)
+			case "jobAnnouncement":
+				return ec.fieldContext_Company_jobAnnouncement(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Company", field.Name)
 		},
@@ -1528,6 +1608,8 @@ func (ec *executionContext) fieldContext_JobAnnouncement_company(ctx context.Con
 				return ec.fieldContext_Company_description(ctx, field)
 			case "numberOfEmployees":
 				return ec.fieldContext_Company_numberOfEmployees(ctx, field)
+			case "jobAnnouncement":
+				return ec.fieldContext_Company_jobAnnouncement(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Company", field.Name)
 		},
@@ -1734,6 +1816,8 @@ func (ec *executionContext) fieldContext_JobsInCompany_company(ctx context.Conte
 				return ec.fieldContext_Company_description(ctx, field)
 			case "numberOfEmployees":
 				return ec.fieldContext_Company_numberOfEmployees(ctx, field)
+			case "jobAnnouncement":
+				return ec.fieldContext_Company_jobAnnouncement(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Company", field.Name)
 		},
@@ -1855,6 +1939,8 @@ func (ec *executionContext) fieldContext_Mutation_createCompany(ctx context.Cont
 				return ec.fieldContext_Company_description(ctx, field)
 			case "numberOfEmployees":
 				return ec.fieldContext_Company_numberOfEmployees(ctx, field)
+			case "jobAnnouncement":
+				return ec.fieldContext_Company_jobAnnouncement(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Company", field.Name)
 		},
@@ -1966,9 +2052,9 @@ func (ec *executionContext) _Position_id(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Position_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1978,7 +2064,7 @@ func (ec *executionContext) fieldContext_Position_id(ctx context.Context, field 
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2242,6 +2328,8 @@ func (ec *executionContext) fieldContext_Query_companies(ctx context.Context, fi
 				return ec.fieldContext_Company_description(ctx, field)
 			case "numberOfEmployees":
 				return ec.fieldContext_Company_numberOfEmployees(ctx, field)
+			case "jobAnnouncement":
+				return ec.fieldContext_Company_jobAnnouncement(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Company", field.Name)
 		},
@@ -2296,6 +2384,8 @@ func (ec *executionContext) fieldContext_Query_getCompany(ctx context.Context, f
 				return ec.fieldContext_Company_description(ctx, field)
 			case "numberOfEmployees":
 				return ec.fieldContext_Company_numberOfEmployees(ctx, field)
+			case "jobAnnouncement":
+				return ec.fieldContext_Company_jobAnnouncement(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Company", field.Name)
 		},
@@ -2433,6 +2523,58 @@ func (ec *executionContext) fieldContext_Query_getUser(ctx context.Context, fiel
 	if fc.Args, err = ec.field_Query_getUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_positions(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_positions(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Positions(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Position)
+	fc.Result = res
+	return ec.marshalNPosition2ᚕᚖgithubᚗcomᚋPrayash07ᚋpractice_projectᚋgraphᚋmodelᚐPositionᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_positions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Position_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Position_name(ctx, field)
+			case "experience":
+				return ec.fieldContext_Position_experience(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Position", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -2997,6 +3139,8 @@ func (ec *executionContext) fieldContext_UsersAppliedInVacancy_company(ctx conte
 				return ec.fieldContext_Company_description(ctx, field)
 			case "numberOfEmployees":
 				return ec.fieldContext_Company_numberOfEmployees(ctx, field)
+			case "jobAnnouncement":
+				return ec.fieldContext_Company_jobAnnouncement(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Company", field.Name)
 		},
@@ -4880,21 +5024,13 @@ func (ec *executionContext) unmarshalInputJobAnnouncementObject(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "title", "description", "url", "position", "companyId"}
+	fieldsInOrder := [...]string{"title", "description", "url", "position", "companyId"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "id":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNInt2int(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "title":
 			var err error
 
@@ -5052,29 +5188,49 @@ func (ec *executionContext) _Company(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = ec._Company_id(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 
 			out.Values[i] = ec._Company_name(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "description":
 
 			out.Values[i] = ec._Company_description(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "numberOfEmployees":
 
 			out.Values[i] = ec._Company_numberOfEmployees(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
+		case "jobAnnouncement":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Company_jobAnnouncement(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5547,6 +5703,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getUser(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "positions":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_positions(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -6202,6 +6381,44 @@ func (ec *executionContext) marshalNJobAnnouncement2githubᚗcomᚋPrayash07ᚋp
 	return ec._JobAnnouncement(ctx, sel, &v)
 }
 
+func (ec *executionContext) marshalNJobAnnouncement2ᚕᚖgithubᚗcomᚋPrayash07ᚋpractice_projectᚋgraphᚋmodelᚐJobAnnouncement(ctx context.Context, sel ast.SelectionSet, v []*model.JobAnnouncement) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOJobAnnouncement2ᚖgithubᚗcomᚋPrayash07ᚋpractice_projectᚋgraphᚋmodelᚐJobAnnouncement(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
 func (ec *executionContext) marshalNJobAnnouncement2ᚕᚖgithubᚗcomᚋPrayash07ᚋpractice_projectᚋgraphᚋmodelᚐJobAnnouncementᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.JobAnnouncement) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -6259,6 +6476,50 @@ func (ec *executionContext) marshalNJobAnnouncement2ᚖgithubᚗcomᚋPrayash07�
 func (ec *executionContext) unmarshalNJobAnnouncementObject2githubᚗcomᚋPrayash07ᚋpractice_projectᚋgraphᚋmodelᚐJobAnnouncementObject(ctx context.Context, v interface{}) (model.JobAnnouncementObject, error) {
 	res, err := ec.unmarshalInputJobAnnouncementObject(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNPosition2ᚕᚖgithubᚗcomᚋPrayash07ᚋpractice_projectᚋgraphᚋmodelᚐPositionᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Position) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNPosition2ᚖgithubᚗcomᚋPrayash07ᚋpractice_projectᚋgraphᚋmodelᚐPosition(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNPosition2ᚖgithubᚗcomᚋPrayash07ᚋpractice_projectᚋgraphᚋmodelᚐPosition(ctx context.Context, sel ast.SelectionSet, v *model.Position) graphql.Marshaler {

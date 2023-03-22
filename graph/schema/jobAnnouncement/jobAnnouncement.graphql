@@ -7,7 +7,6 @@ type JobAnnouncement{
 }
 
 input JobAnnouncementObject{
-    id:Int!
     title: String!
     description:String!
     url:String!

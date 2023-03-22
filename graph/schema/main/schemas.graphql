@@ -10,6 +10,7 @@ type Query {
     getCompany(id:Int!): Company!
     users: [User!]!
     getUser(id:ID!):User!
+    positions: [Position!]!
 }
 
 type Mutation {

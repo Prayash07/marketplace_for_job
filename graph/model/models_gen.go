@@ -9,10 +9,11 @@ import (
 )
 
 type Company struct {
-	ID                int    `json:"id"`
-	Name              string `json:"name"`
-	Description       string `json:"description"`
-	NumberOfEmployees int    `json:"numberOfEmployees"`
+	ID                int                `json:"id"`
+	Name              string             `json:"name"`
+	Description       string             `json:"description"`
+	NumberOfEmployees int                `json:"numberOfEmployees"`
+	JobAnnouncement   []*JobAnnouncement `json:"jobAnnouncement"`
 }
 
 type CompanyObject struct {
@@ -43,7 +44,6 @@ type JobAnnouncement struct {
 }
 
 type JobAnnouncementObject struct {
-	ID          int               `json:"id"`
 	Title       string            `json:"title"`
 	Description string            `json:"description"`
 	URL         string            `json:"url"`
@@ -62,7 +62,7 @@ type JobsInCompany struct {
 }
 
 type Position struct {
-	ID         string `json:"id"`
+	ID         int    `json:"id"`
 	Name       string `json:"name"`
 	Experience string `json:"experience"`
 }
